@@ -1,0 +1,63 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<math.h>
+
+#define PI 3.14159
+
+int main()
+{
+   int i,j,m,n;
+   float h,k,t,x,c,r;
+   
+   printf("\nEnter the value of c : c = ");
+   scanf("%f",&c);
+   printf("\nEnter the value of h : h = ");
+   scanf("%f",&h);
+   printf("\nEnter the value of k : k = ");
+   scanf("%f",&k);
+   printf("\nEnter the upper value of t : t = ");
+   scanf("%f",&t);
+   printf("\nEnter the upper value of x : x = ");
+   scanf("%f",&x);
+   
+   m=(int)(t/k);
+   n=(int)(x/h);
+   r=(int)((k*c*c)/(h*h));
+   
+   float **u = (float**)malloc((n+1)*sizeof(float*));
+   for(i=0;i<=n;i++)
+   {
+       u[i]=(float*)malloc((m+1)*sizeof(float));
+   }
+   for(i=0;i<=m;i++)
+   {
+       u[0][i]=0;
+       u[n][i]=0;
+   }
+   for(i=0;i<n;i++)
+   {
+       u[i][0]=sin(PI*i*h);
+   }
+   for(j=0;j<m;j++)
+    {
+        for(i=1;i<n;i++)
+        {
+            u[i][j+1]=r*u[i+1][j]+(1-2*r)*u[i][j]+r*u[i-1][j];
+        }
+    }
+    printf("The values are : \n");
+    for(j=0;j<=m;j++)
+      {
+          for(i=0;i<=n;i++)
+          {
+              printf("%3.f",u[i][j]);
+          } printf("\n");
+      }
+    for(i=0;i<=n;i++)
+    {
+        free(u[i]);
+    }
+    free(u);
+    return 0;
+    
+}
