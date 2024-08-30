@@ -1,0 +1,117 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+const float LENGTH = 8.0;   // Length of the rod (8 cm)
+const float TOTAL_TIME = 0.625; // Total time (5 * 0.125 = 0.625 seconds)
+const float SPATIAL_STEP = 1.0;  // Spatial step (1 cm)
+const float TIME_STEP = 0.125; // Time step (0.125 s)
+const float DIFFUSIVITY = 4.0; // Diffusivity constant
+
+void solveTridiagonal(float* lower, float* diag, float* upper, float* rhs, float* solution, int size) 
+{
+    float* alpha = (float*)malloc(size * sizeof(float));
+    float* beta = (float*)malloc(size * sizeof(float));
+
+    // Initialize alpha0 and beta0
+    alpha[0] = diag[0];
+    beta[0] = rhs[0] / diag[0];
+
+    // Forward sweep: compute alpha and beta coefficients
+    for (int i = 1; i < size; ++i) 
+    {
+        alpha[i] = diag[i] - (lower[i] * upper[i - 1]) / alpha[i - 1];
+        beta[i] = (rhs[i] - lower[i] * beta[i - 1]) / alpha[i];
+    }
+
+    // Backward substitution to find the solution
+    solution[size - 1] = beta[size - 1];
+
+    for (int i = size - 2; i >= 0; --i) 
+    {
+        solution[i] = beta[i] - (upper[i] * solution[i + 1]) / alpha[i];
+    }
+
+    free(alpha);
+    free(beta);
+}
+
+int main() 
+{
+    int numPoints = (int)(LENGTH / SPATIAL_STEP) + 1; // Number of spatial points
+    int numSteps = (int)(TOTAL_TIME / TIME_STEP);     // Number of time steps
+
+    // Allocate memory for arrays
+    float* current = (float*)malloc(numPoints * sizeof(float));
+    float* previous = (float*)malloc(numPoints * sizeof(float));
+    float* lower = (float*)malloc((numPoints - 2) * sizeof(float));
+    float* diag = (float*)malloc((numPoints - 2) * sizeof(float));
+    float* upper = (float*)malloc((numPoints - 2) * sizeof(float));
+    float* rhs = (float*)malloc((numPoints - 2) * sizeof(float));
+
+    // Initialize arrays and initial condition u(x,0) = x(8-x)/2
+    for (int i = 0; i < numPoints; ++i) 
+    {
+        float x = i * SPATIAL_STEP;
+        current[i] = (x * (8.0 - x)) / 2.0;
+        previous[i] = current[i];
+    }
+
+    // Boundary conditions
+    current[0] = 0.0;
+    current[numPoints - 1] = 0.0;
+    previous[0] = 0.0;
+    previous[numPoints - 1] = 0.0;
+
+    float ratio = (DIFFUSIVITY * TIME_STEP) / (SPATIAL_STEP * SPATIAL_STEP);
+
+    // Initialize coefficients of the tridiagonal matrix
+    for (int i = 0; i < numPoints - 2; ++i) 
+    {
+        lower[i] = -ratio;
+        diag[i] = 1 + 2 * ratio;
+        upper[i] = -ratio;
+    }
+
+    //printf("Temperature distribution after zeroth time level:\n");
+    for (int i = 0; i < numPoints; ++i) {
+        printf(" %.3f ", current[i]);
+    }
+    printf("\n\n");
+
+    // Time-stepping loop
+    for (int j = 0; j < numSteps; ++j) {
+        // Prepare the right-hand side vector
+        for (int i = 1; i < numPoints - 1; ++i) {
+            rhs[i - 1] = previous[i];
+        }
+
+        rhs[0] += ratio * current[0];         // Adjust the first entry to account for the left boundary
+        rhs[numPoints - 3] += ratio * current[numPoints - 1]; // Adjust the last entry to account for the right boundary
+
+        // Solve the tridiagonal system for the current time step
+        solveTridiagonal(lower, diag, upper, rhs, current + 1, numPoints - 2);
+
+        // Update the previous time step solution
+        for (int i = 1; i < numPoints - 1; ++i) {
+            previous[i] = current[i];
+        }
+
+        // Print the temperature distribution at the current time level
+        //printf("Temperature distribution after time level %.3f seconds:\n", (j + 1) * TIME_STEP);
+        for (int i = 0; i < numPoints; ++i) 
+        {
+            printf(" %.3f ", current[i]);
+        }
+        printf("\n\n");
+    }
+
+    // Free allocated memory
+    free(current);
+    free(previous);
+    free(lower);
+    free(diag);
+    free(upper);
+    free(rhs);
+
+    return 0;
+}
