@@ -1,0 +1,61 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define SIZE 4 // Fixed grid size for 4x4 matrix
+
+// Function to perform the Gauss-Seidel iteration for 2D Laplace equation
+void gauss_seidel(float u[SIZE][SIZE], int iterations) {
+    for (int iter = 0; iter < iterations; ++iter) {
+        // Update values using Gauss-Seidel iteration for all points
+        for (int i = 1; i < SIZE - 1; ++i) {
+            for (int j = 1; j < SIZE - 1; ++j) {
+                u[i][j] = 0.25 * (u[i + 1][j] + u[i - 1][j] + u[i][j + 1] + u[i][j - 1]);
+            }
+        }
+
+        // Print the matrix after each iteration
+        printf("Iteration %d:\n", iter + 1);
+        for (int i = 0; i < SIZE; ++i) {
+            for (int j = 0; j < SIZE; ++j) {
+                printf("%7.4f\t", u[i][j]);
+            }
+            printf("\n");
+        }
+        printf("\n");
+    }
+}
+
+int main() {
+    int iterations;
+    float u[SIZE][SIZE] = {0}; // Initialize the matrix to zero
+
+    printf("Enter the number of iterations: ");
+    scanf("%d", &iterations);
+
+    // Input boundary conditions
+    printf("Enter the boundary conditions:\n");
+    printf("Top boundary (4 values): ");
+    for (int j = 0; j < SIZE; ++j) {
+        scanf("%f", &u[0][j]); // Top row
+    }
+
+    printf("Bottom boundary (4 values): ");
+    for (int j = 0; j < SIZE; ++j) {
+        scanf("%f", &u[SIZE - 1][j]); // Bottom row
+    }
+
+    printf("Left middle boundary (2 values): ");
+    for (int i = 1; i < SIZE - 1; ++i) {
+        scanf("%f", &u[i][0]); // Left column
+    }
+
+    printf("Right middle boundary (2 values): ");
+    for (int i = 1; i < SIZE - 1; ++i) {
+        scanf("%f", &u[i][SIZE - 1]); // Right column
+    }
+
+    // Solve using Gauss-Seidel iteration
+    gauss_seidel(u, iterations);
+
+    return 0;
+}
