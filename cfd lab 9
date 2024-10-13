@@ -1,0 +1,58 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define SIZE 4
+double h = 1.0;
+
+double f(double x, double y) 
+{
+    return -10 * (x * x + y * y + 10);
+}
+
+void solvePoisson(double u[SIZE][SIZE], int iterations) 
+{
+    double u_new[SIZE][SIZE];
+
+    for (int iter = 0; iter < iterations; ++iter) 
+    {
+        for (int i = 0; i < SIZE; ++i)
+            for (int j = 0; j < SIZE; ++j)
+                u_new[i][j] = u[i][j];
+
+        for (int i = 1; i < SIZE - 1; ++i)
+            for (int j = 1; j < SIZE - 1; ++j)
+                if (i != j)
+                    u_new[i][j] = 0.25 * (u[i - 1][j] + u[i + 1][j] + u[i][j - 1] + u[i][j + 1] - h * h * f(i * h, j * h));
+
+        for (int i = 1; i < SIZE - 1; ++i)
+            for (int j = 1; j < SIZE - 1; ++j)
+                if (i == j)
+                    u_new[i][j] = 0.25 * (u_new[i - 1][j] + u_new[i + 1][j] + u_new[i][j - 1] + u_new[i][j + 1] - h * h * f(i * h, j * h));
+
+        for (int i = 1; i < SIZE - 1; ++i)
+            for (int j = 1; j < SIZE - 1; ++j)
+                u[i][j] = u_new[i][j];
+
+        printf("Iteration %d:\n", iter + 1);
+        for (int i = SIZE - 1; i >= 0; --i) 
+        {
+            for (int j = 0; j < SIZE; ++j) 
+            {
+                printf("%7.3f\t", u[i][j]);
+            }
+            printf("\n");
+        }
+        printf("\n");
+    }
+}
+
+int main() {
+    int iterations;
+    double u[SIZE][SIZE] = {0};
+
+    printf("Enter the number of iterations: ");
+    scanf("%d", &iterations);
+    solvePoisson(u, iterations);
+
+    return 0;
+}
