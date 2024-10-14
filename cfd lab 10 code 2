@@ -1,0 +1,47 @@
+#include<stdio.h>
+float f( int i)
+{
+    return(i*i*(5-i));
+}
+int main()
+
+{
+    int i,j,t,n;
+    float r,k,h,u[10][10];
+    printf("Enter the value of h : \t");
+    scanf("%f",&h);
+    printf("Enter the value of n : \t");
+    scanf("%d",&n);
+    printf("Enter the number of time levels t : \t");
+    scanf("%d",&t);
+    printf("Enter the value of k : \t");
+    scanf("%f",&k);
+    printf("Enter the values at u[0][t] :\n");
+    for(i=0;i<t;i++)
+    scanf("%f",&u[0][i]);
+    printf("Enter the values at u[%d][t] :\n",n);
+    for(i=0;i<t;i++)
+    scanf("%f",&u[n][i]);
+    for(i=1;i<n;i++)
+    {
+        u[i][0]=f(i);
+        u[i][1]=u[i][0];
+    }
+    
+    for(j=1;j<t;j++)
+    {
+        for(i=1;i<n;i++)
+        {
+            u[i][j+1]=u[i+1][j]+u[i-1][j]-u[i][j-1];
+        }
+    }
+    
+    for(j=0;j<=t;j++)
+    {
+        printf("(i,%d)\t",j);
+        for(i=0;i<=n;i++)
+        printf("%.2f\t",u[i][j]);
+        printf("\n");
+    }
+    return 0;
+}
